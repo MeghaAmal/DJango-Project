@@ -10,19 +10,22 @@
     <li>
         {{ e.text }}
     </li>
-
     <p>--{{ e.date_added }}</p>
+
+    <p>
+        <a href="{% url 'MainApp:edit_entry' e.id %}">Edit Entry</a>
+    </p>
+
+    {% empty %}
+    <li>No entries for this topic have been added yet.</li>
+
+    {% endfor %}
+
 </ul>
+
+<p>
+    <a href="{% url 'MainApp:new_entry' topic.id %}">Add a new entry</a>
 </p>
-
-{% empty %}
-<li>No entries for this topic have been added yet.</li>
-
-{% endfor %}
-
-</ul>
-
-
 
 
 {% endblock content %}

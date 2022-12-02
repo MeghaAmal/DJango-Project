@@ -9,7 +9,7 @@ from MainApp.models import *
 #select everthing Topic --> eq to select *
 topics = Topic.objects.all()
 
-#query set object return objects from the string text that we returned from model.py
+#query set object #--> while querying the db return objects from the string text that we returned from model.py
 print(topics)
 
 #object is iterable
@@ -28,7 +28,7 @@ print(topic.text)
 #where id>1 and id<5
 #topic.objects.filter(id_gte 1 and id_lte 5)
 
-#get all entries related to that specific topc
+#get all entries related to that specific topic
 entries = topic.entry_set.all()
 
 #or where topic = 
@@ -41,6 +41,8 @@ for e in entries:
     print(e)
     print(e.text)
 
+
+#to access user models 
 from django.contrib.auth.models import User
 
 for user in User.objects.all():

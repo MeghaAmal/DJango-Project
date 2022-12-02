@@ -1,9 +1,11 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from .models import *
+from .forms import TopicForm,EntryForm
 
 # Create your views here.
 
 #post or get --> request
+#Request is an httprequest object
 def index(request):
     return render(request,'MainApp/index.html')
 
@@ -30,4 +32,54 @@ def topic(request,topic_id):
 
     return render(request,'MainApp/topic.html',context)
 
+#evaluate type of request
+def new_topic(request):
+    if request.method != 'POST':
+        form = TopicForm()
+    else:
+        print(request.POST)
+        form = TopicForm(data=request.POST)
+        #validation
+        if form.is_valid():
+            form.save()
+            #automatically go to another page
+            return redirect('MainApp:topics')
 
+    context = {'form':form}
+    return render(request, 'MainApp/new_topic.html',context)
+
+def new_entry(request,topic_id):
+    topic=Topic.objects.get(id=topic_id)
+    if request.method != 'POST':
+        form = EntryForm()
+    else:
+        #print(request.POST)
+        form = EntryForm(data=request.POST)
+        #validation
+        if form.is_valid():
+            #since it dnt have id , we shouldnt commit it
+            new_entry = form.save(commit=False)
+            #get the topic first from 52
+            new_entry.topic = topic
+            new_entry.save()
+            #automatically go to another page
+            return redirect('MainApp:topic',topic_id=topic_id)
+
+    context = {'form':form,'topic':topic}
+    return render(request, 'MainApp/new_entry.html',context)
+
+def edit_entry(request,entry_id):
+    entry = Entry.objects.get(id=entry_id)
+    topic = entry.topic # we are getting this topic from our entry model
+
+    if request.method != 'POST':
+        #load the that specfic entry to the textbox
+        form = EntryForm(instance=entry)
+    else:
+        form = EntryForm (instance=entry,data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('MainApp:topic',topic_id=topic.id)
+
+    context = {'form':form,'topic':topic,'entry':entry}
+    return render(request, 'MainApp/edit_entry.html',context)
