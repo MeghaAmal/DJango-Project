@@ -1,6 +1,8 @@
 from django.shortcuts import render,redirect
 from .models import *
 from .forms import TopicForm,EntryForm
+from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 # Create your views here.
 
@@ -9,10 +11,15 @@ from .forms import TopicForm,EntryForm
 def index(request):
     return render(request,'MainApp/index.html')
 
+
+@login_required
 def topics(request):
     #order based om when it was created
     #add minus in fromt of attribute ('-date_added')
-    topics= Topic.objects.order_by('date_added')
+    #topics= Topic.objects.order_by('date_added')
+    #topics that belong to the user, check if 
+    topics= Topic.objects.filter(owner=request.user).order_by('date_added')
+
 
     #use a dict to pass in render func --> pass data from db to template
     #key --> is the smae var name we use in our template file eg --> topics.html, value that should match the object name in view.py
@@ -21,10 +28,14 @@ def topics(request):
     #to display a page with data in it
     return render(request,'MainApp/topics.html',context)
 
-
+@login_required
 def topic(request,topic_id):
 
     t = Topic.objects.get(id=topic_id)
+
+    #check if the owner of the topic is the current person requesting that page
+    if t.owner != request.user:
+        raise Http404
     #entries related to that specific topic
     entries = Entry.objects.filter(topic=t)
 
@@ -32,6 +43,7 @@ def topic(request,topic_id):
 
     return render(request,'MainApp/topic.html',context)
 
+@login_required
 #evaluate type of request
 def new_topic(request):
     if request.method != 'POST':
@@ -48,6 +60,7 @@ def new_topic(request):
     context = {'form':form}
     return render(request, 'MainApp/new_topic.html',context)
 
+@login_required
 def new_entry(request,topic_id):
     topic=Topic.objects.get(id=topic_id)
     if request.method != 'POST':
@@ -68,6 +81,7 @@ def new_entry(request,topic_id):
     context = {'form':form,'topic':topic}
     return render(request, 'MainApp/new_entry.html',context)
 
+@login_required
 def edit_entry(request,entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic # we are getting this topic from our entry model
