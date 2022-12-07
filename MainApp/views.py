@@ -53,7 +53,9 @@ def new_topic(request):
         form = TopicForm(data=request.POST)
         #validation
         if form.is_valid():
-            form.save()
+            new_topic= form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             #automatically go to another page
             return redirect('MainApp:topics')
 
@@ -63,6 +65,8 @@ def new_topic(request):
 @login_required
 def new_entry(request,topic_id):
     topic=Topic.objects.get(id=topic_id)
+    if topic.owner != request.user:
+        raise Http404
     if request.method != 'POST':
         form = EntryForm()
     else:
@@ -85,6 +89,9 @@ def new_entry(request,topic_id):
 def edit_entry(request,entry_id):
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic # we are getting this topic from our entry model
+
+    if topic.owner != request.user:
+        raise Http404
 
     if request.method != 'POST':
         #load the that specfic entry to the textbox
